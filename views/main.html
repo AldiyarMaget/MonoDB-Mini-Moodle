@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mini Moodle</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+<header class="topbar">
+    <div class="container topbar__inner">
+        <a class="brand" href="/">Mini Moodle</a>
+
+        <nav class="nav">
+            <a class="nav__link" href="#courses">Курсы</a>
+            <a class="nav__link" href="/docs">API</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <h1>Welcome to Mini Moodle</h1>
+        <p class="muted">Выберите курс из списка ниже.</p>
+    </section>
+
+    <section id="courses">
+        <div class="section-head">
+            <h2>Доступные курсы</h2>
+            <button id="reloadBtn" class="btn" type="button">Обновить</button>
+        </div>
+
+        <div id="status" class="status muted">Загрузка...</div>
+        <div id="coursesGrid" class="grid"></div>
+    </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
