@@ -36,7 +36,16 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 func Login(w http.ResponseWriter, r *http.Request) {
 	var input models.User
-	json.NewDecoder(r.Body).Decode(&input)
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if input.Username == "" || input.Password == "" {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
 
 	var dbUser models.User
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
