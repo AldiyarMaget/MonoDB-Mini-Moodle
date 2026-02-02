@@ -13,6 +13,18 @@ import (
 	"AP_Final/models"
 )
 
+// AuthMiddleware — функция, которая не пускает дальше, если нет куки
+func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("session_token")
+		if err != nil || cookie.Value == "" {
+			http.Error(w, "Доступ запрещен: сначала войдите в систему", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	}
+}
+
 func Register(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
@@ -30,20 +42,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "User registered",
-	})
+	json.NewEncoder(w).Encode(map[string]string{"message": "User registered"})
 }
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	var input models.User
-
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	if input.Username == "" || input.Password == "" {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		http.Error(w, "Invalid body", http.StatusBadRequest)
 		return
 	}
 
@@ -51,26 +56,21 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := db.GetCollection("users").
-		FindOne(ctx, bson.M{"username": input.Username}).
-		Decode(&dbUser)
-
-	if err != nil {
+	err := db.GetCollection("users").FindOne(ctx, bson.M{"username": input.Username}).Decode(&dbUser)
+	if err != nil || bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(input.Password)) != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword(
-		[]byte(dbUser.Password),
-		[]byte(input.Password),
-	)
-
-	if err != nil {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Login successful",
+	// Устанавливаем Cookie для авторизации
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    dbUser.Username,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Path:     "/",
 	})
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"})
 }

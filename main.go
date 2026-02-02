@@ -12,18 +12,16 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found")
-	}
+	_ = godotenv.Load()
 
 	mongoURI := os.Getenv("MONGO_URI")
 	if mongoURI == "" {
-		log.Fatal("MONGO_URI is not set")
+		mongoURI = "mongodb://localhost:27017" // дефолт, если .env пуст
 	}
 
 	db.Connect(mongoURI)
 
+	// Инициализируем маршруты
 	routes.RegisterRoutes()
 
 	port := os.Getenv("PORT")
@@ -31,6 +29,7 @@ func main() {
 		port = "8080"
 	}
 
-	log.Println("Server is running on :" + port)
-	http.ListenAndServe(":"+port, nil)
+	log.Printf("Сервер запущен на http://localhost:%s/home", port)
+	// nil означает использование стандартного ServeMux, в который мы пишем через http.HandleFunc
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
