@@ -7,7 +7,7 @@ async function loadCourses() {
     status.textContent = "Load...";
 
     try {
-        const res = await fetch(`${API_BASE}/courses`, {
+        const res = await fetch(`${API_BASE}/course`, {
             headers: { "Accept": "application/json" }
         });
 
@@ -16,18 +16,18 @@ async function loadCourses() {
             return;
         }
 
-        const courses = await res.json(); // ожидаем массив: [{id, title, ...}]
-        if (!Array.isArray(courses) || courses.length === 0) {
+        const course = await res.json(); // ожидаем массив: [{id, title, ...}]
+        if (!Array.isArray(course) || course.length === 0) {
             status.textContent = "Пока нет курсов.";
             return;
         }
 
         status.textContent = "";
 
-        for (const c of courses) {
+        for (const c of course) {
             const card = document.createElement("a");
             card.className = "card";
-            card.href = `/courses/${c.id}`; // если страницы курса ещё нет, можно оставить "#"
+            card.href = `/course/${c.id}`; // если страницы курса ещё нет, можно оставить "#"
             card.innerHTML = `
             <div class="card__title">${escapeHtml(c.title ?? "Без названия")}</div>
             <div class="card__meta">ID: ${escapeHtml(String(c.id ?? ""))}</div>
