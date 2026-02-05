@@ -175,5 +175,5 @@ Pipeline (runs on `enrollments` collection with fields `userId`, `courseId`, `st
 - `progress`: unique compound index on `{ userId: 1, courseId: 1, itemId: 1 }`.
 
 ## UI Pages
-- `/courses` — course catalog (search/filters/pagination via API)
-- `/courses/{id}` — course details + modules/items list + update progress
+- `/courses` ï¿½ course catalog (search/filters/pagination via API)
+- `/courses/{id}` ï¿½ course details + modules/items list + update progress
